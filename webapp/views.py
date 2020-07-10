@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
 @login_required()
-def logout(request):
+def logout_view(request):
     logout(request)
     return HttpResponseRedirect('/')
 
@@ -14,12 +14,12 @@ def logout(request):
 @login_required()
 def home(request):
     context = {}
-    # items = models.Item.objects.all()
-    # context['items'] = items
+    items = User.objects.all()
+    context['items'] = items
     return render(request, 'home.html', context)
 
 
-def login(request):
+def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -32,12 +32,37 @@ def login(request):
                 return HttpResponseRedirect('/')
             else:
                 msg = 'Your account has been disabled!'
-                return render(request, 'login.html', {'msg':msg, 'login':logged, 'username':username})
+                return render(request, 'login.html', {'err':msg, 'login':logged, 'username':username})
         else:
-            msg = "Invalid login details provided!"
-            return render(request, 'login.html', {'msg':msg, 'login':logged, 'username':username})
+            if User.objects.filter(username = username):
+                msg = 'Invalid Password!'
+                return render(request, 'login.html', {'err':msg, 'login':logged, 'username':username})
+            return HttpResponseRedirect('/signup')
 
     else:
         return render(request, 'login.html', {})
 
+def signup(request):
+    context = {}
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        if password!=confirm_password:
+            context['err'] = 'Passwords Mismatched!'
+        try:
+            user = User.objects.get(username=username)
+            context['err'] = 'User already exists with this username!'
+        except:
+            pass
 
+        if not context.get('err'):
+            user = User.objects.create_user(
+                username=username,
+                password=password
+            )
+            user.save()
+            context['msg'] = 'User Created.'
+            return HttpResponseRedirect('/')
+
+    return render(request, 'signup.html', context)

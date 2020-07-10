@@ -28,7 +28,12 @@
                             </div>
                             {% if msg %}
                                 <div class="form-group">
-                                    <span>{{msg}}</span>
+                                    <span style="color:green;">{{msg}}</span>
+                                </div>
+                            {% endif %}
+                            {% if err %}
+                                <div class="form-group">
+                                    <span style="color:red;">{{err}}</span>
                                 </div>
                             {% endif %}
                             <div class="form-group">
