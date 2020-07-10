@@ -13,10 +13,20 @@ def logout_view(request):
 
 @login_required()
 def home(request):
-    context = {}
-    items = User.objects.all()
-    context['items'] = items
-    return render(request, 'home.html', context)
+	context = {}
+	if request.method == 'POST':
+		user_id = request.POST.get('user_id')
+		try:
+			User.objects.get(pk = user_id).delete()
+			context['msg'] = 'Sucessfully deleted.'
+		except:
+			context['err'] = 'User not found!'
+
+	items = User.objects.all()
+	if not items:
+		return HttpResponseRedirect('/')
+	context['items'] = items
+	return render(request, 'home.html', context)
 
 
 def login_view(request):
@@ -62,6 +72,7 @@ def signup(request):
                 password=password
             )
             user.save()
+            login(request, user)
             context['msg'] = 'User Created.'
             return HttpResponseRedirect('/')
 
